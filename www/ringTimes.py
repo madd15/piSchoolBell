@@ -8,6 +8,7 @@ from modules import (
     getDayName,
     webPageFooter,
     webPageHeader,
+    pageNav,
     db_connect,
     db_create_cursor,
     db_close_cursor,
@@ -42,25 +43,6 @@ weekDays = list("0000000")  # weekDays string
 verbose = False
 
 fs = cgi.FieldStorage()
-
-print ("Content-type: text/html")
-
-print ("""
-<html>
-
-<head><title>School Bell - Times</title></head>
-
-<style>
-table, th, td {
-    border: 1px solid black;
-}
-</style>
- 
-<body>
- 
-<h3> School Bell - Times</h3>
-""")
-
 
 # connect to database
 cnx = db_connect(verbose)
@@ -231,9 +213,8 @@ def pageBody():
         print ("\n<br>\n<br>"
             + '<a href="ringTimes.py?addRingTime=1">Add New Time</a>'
             + "\n<br>\n<br>"
-            + '<table style="width:100%">'
+            + '<table id="ringTimes" style="width:100%">'
             + "<tr>"
-            + "<th>Id</th>"
             + "<th>Time name</th>"
             + "<th>Ring time</th>"
             + "<th>Ring pattern id</th>"
@@ -243,7 +224,6 @@ def pageBody():
             print ("<th>%s</th>" % getDayName(dayNumber, verbose))
 
         print ("<th></th>"
-            + "<th></th>"
             + "</tr>")
 
         for row in result:
@@ -262,10 +242,9 @@ def pageBody():
                 editRingPatternId = ringPatternId
 
             print ("<tr>"
-                + "<th>%s</th>" % ringTimeId
-                + "<th>%s</th>" % ringTimeName
-                + "<th>%s</th>" % ringTime
-                + "<th>%s</th>" % ringPatternId)
+                + "<td>%s</td>" % ringTimeName
+                + "<td>%s</td>" % ringTime
+                + "<td>%s</td>" % ringPatternId)
             # get ring patterns
             query = (
                 "SELECT ringPatternName, ringPattern FROM ringPatterns "
@@ -276,15 +255,14 @@ def pageBody():
                 for row in result:
                     ringPatternName = row[0]
                     ringPattern = row[1]
-            print ("<th>%s</th>" % ringPatternName
-                + "<th>%s</th>" % ringPattern)
+            print ("<td>%s</td>" % ringPatternName
+                + "<td>%s</td>" % ringPattern)
             for dayNumber in range(0, 7):  # print day name
                 if weekDays[dayNumber] == "1":
-                    print ("<th>On</th>")
+                    print ("<td class='onDay'>On</td>")
                 else:
-                    print ("<th>Off</th>")
-            print ('<th><a href="ringTimes.py?deleteRingTimeId=%s">Delete</a></th>' % ringTimeId
-                + '<th><a href="ringTimes.py?editRingTimeId=%s">Edit</a></th>' % ringTimeId
+                    print ("<td class='offDay'>Off</td>")
+            print ('<td><a href="ringTimes.py?deleteRingTimeId=%s">Delete</a> / <a href="ringTimes.py?editRingTimeId=%s">Edit</a></td>' % (ringTimeId, ringTimeId)
                 + "</tr>")
 
         print ("</table")
@@ -403,7 +381,7 @@ def pageBody():
 
 if __name__ == "__main__":
     webPageHeader()
-    pageLinks()
+    pageNav()
     pageBody()
     webPageFooter()
 

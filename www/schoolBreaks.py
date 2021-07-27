@@ -7,6 +7,7 @@ from modules import (
     validateDate,
     webPageFooter,
     webPageHeader,
+    pageNav,
     db_connect,
     db_create_cursor,
     db_close_cursor,
@@ -40,25 +41,6 @@ deleteSchoolBreakId = ""  # this break will be deleted
 verbose = False
 
 fs = cgi.FieldStorage()
-
-print ("Content-type: text/html")
-
-print ("""
-<html>
-
-<head><title>School Bell - Breaks</title></head>
-
-<style>
-table, th, td {
-    border: 1px solid black;
-}
-</style>
- 
-<body>
- 
-<h3>School Bell - Breaks</h3>
-""")
-
 
 # connect to database
 cnx = db_connect(verbose)
@@ -272,14 +254,6 @@ elif updateSchoolBreakId:  # update break
             if rowCount:
                 print ("\n<br>Updated break with id = %s" % updateSchoolBreakId)
 
-
-def pageLinks():
-
-    print ('<a href="index.py">Home</a>'
-        + '\n<br>\n<br><a href="ringTimes.py">Times</a>'
-        + '\n<br><a href="ringPatterns.py">Patterns</a>')
-
-
 def pageBody():
 
     # get breaks
@@ -292,11 +266,9 @@ def pageBody():
             + "\n<br>\n<br>"
             + '<table style="width:400px">'
             + "<tr>"
-            + "<th>Id</th>"
             + "<th>Break name</th>"
             + "<th>Start date</th>"
             + "<th>End date</th>"
-            + "<th></th>"
             + "<th></th>"
             + "</tr>")
 
@@ -314,12 +286,10 @@ def pageBody():
                 editEndDate = endDate
 
             print ("<tr>"
-                + "<th>%s</th>" % schoolBreakId
-                + "<th>%s</th>" % schoolBreakName.encode("Latin1")
-                + "<th>%s</th>" % startDate
-                + "<th>%s</th>" % endDate
-                + '<th><a href="schoolBreaks.py?deleteSchoolBreakId=%s">Delete</a></th>' % schoolBreakId
-                + '<th><a href="schoolBreaks.py?editSchoolBreakId=%s">Edit</a></th>' % schoolBreakId
+                + "<td>%s</td>" % schoolBreakName
+                + "<td>%s</td>" % startDate
+                + "<td>%s</th>" % endDate
+                + '<td><a href="schoolBreaks.py?deleteSchoolBreakId=%s">Delete</a> / <a href="schoolBreaks.py?editSchoolBreakId=%s">Edit</a></td>' % (schoolBreakId, schoolBreakId)
                 + "</tr>")
 
         print ("</table")
@@ -384,7 +354,7 @@ def pageBody():
 
 if __name__ == "__main__":
     webPageHeader()
-    pageLinks()
+    pageNav()
     pageBody()
     webPageFooter()
 

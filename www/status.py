@@ -12,6 +12,7 @@ from modules import (
     findRingTimes,
     webPageFooter,
     webPageHeader,
+    pageNav,
     countEntriesInDatabase,
     db_connect,
     db_create_cursor,
@@ -26,19 +27,7 @@ import cgitb
 
 cgitb.enable()  # for troubleshooting
 
-print ("Content-type: text/html")
-
 verbose = False
-
-print ("""
-<html>
-
-<head><title>School Bell - Status</title></head>
- 
-<body>
- 
-<h3>School Bell - Status</h3>
-""")
 
 # connect to database
 cnx = db_connect(verbose)
@@ -99,10 +88,7 @@ def countRingTimes(iMax):
 
 def pageLinks():
 
-    print ('\n<br><a href="index.py">Home</a>'
-        + "\n<br>"
-        + '\n<br><a href="displayLogs.py">Log files</a>')
-
+    print ('\n<br><a href="displayLogs.py">Log files</a>')
 
 def pageBody():
 
@@ -181,6 +167,7 @@ def pageBody():
 
 if __name__ == "__main__":
     webPageHeader()
+    pageNav()
     pageLinks()
     pageBody()
     webPageFooter()

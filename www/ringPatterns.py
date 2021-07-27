@@ -6,6 +6,7 @@ from modules import (
     htmlFormEscape,
     webPageFooter,
     webPageHeader,
+    pageNav,
     db_connect,
     db_create_cursor,
     db_close_cursor,
@@ -36,25 +37,6 @@ deleteRingPatternId = ""  # this ring pattern will be deleted
 verbose = False
 
 fs = cgi.FieldStorage()
-
-print ("Content-type: text/html")
-
-print ("""
-<html>
-
-<head><title>School Bell - Ring Patterns</title></head>
-
-<style>
-table, th, td {
-    border: 1px solid black;
-}
-</style>
- 
-<body>
- 
-<h3>School Bell - Ring Patterns</h3>
-""")
-
 
 # connect to database
 cnx = db_connect(verbose)
@@ -218,15 +200,6 @@ elif updateRingPatternId:  # update ring pattern
             if rowCount:
                 print ("\n<br>Updated ring pattern with id = %s" % updateRingPatternId)
 
-
-def pageLinks():
-
-    print ('<a href="index.py">Home</a>'
-            "\n<br>"
-            '\n<br><a href="ringTimes.py">Times</a>'
-            '\n<br><a href="schoolBreaks.py">Breaks</a>')
-
-
 def pageBody():
 
     # get ring patterns
@@ -239,10 +212,8 @@ def pageBody():
                 "\n<br>\n<br>"
                 '<table style="width:400px">'
                 "<tr>"
-                "<th>Id</th>"
                 "<th>Pattern name</th>"
                 "<th>Pattern</th>"
-                "<th></th>"
                 "<th></th>"
                 "</tr>")
 
@@ -258,11 +229,9 @@ def pageBody():
                 editRingPattern = ringPattern
 
             print ("<tr>"
-                "<th>%s</th>" % ringPatternId
-                + "<th>%s</th>" % ringPatternName.encode("Latin1")
-                + "<th>%s</th>" % ringPattern
-                + '<th><a href="ringPatterns.py?deleteRingPatternId=%s">Delete</a></th>' % ringPatternId
-                + '<th><a href="ringPatterns.py?editRingPatternId=%s">Edit</a></th>' % ringPatternId
+                + "<td>%s</td>" % ringPatternName.encode("Latin1")
+                + "<td>%s</td>" % ringPattern
+                + '<td><a href="ringPatterns.py?deleteRingPatternId=%s">Delete</a> / <a href="ringPatterns.py?editRingPatternId=%s">Edit</a></th>' % (ringPatternId, ringPatternId)
                 + "</tr>")
 
         print ("</table")
@@ -316,7 +285,7 @@ def pageBody():
 
 if __name__ == "__main__":
     webPageHeader()
-    pageLinks()
+    pageNav()
     pageBody()
     webPageFooter()
 

@@ -6,6 +6,7 @@ from modules import (
     nextRing,
     webPageFooter,
     webPageHeader,
+    pageNav,
     db_connect,
     db_create_cursor,
     db_close_cursor,
@@ -34,28 +35,17 @@ verbose = False
 
 fs = cgi.FieldStorage()
 
-print("Content-type: text/html")
-
-print("""
-<html>
-<head><title>School Bell</title></head>
-<body>
-<h3>School Bell</h3>
-""")
-
 for key in fs.keys():
     if (key == "ringSchoolBell" and fs[key].value == "1"):
         ringSchoolBell = True
 
 if ringSchoolBell:
-    bellRelayState = False
     LCDMessage = "Ringing Bell......"
     GPIO.setmode(GPIO.BCM)
     GPIO.setwarnings(False)
     GPIO.setup(bellRelayGpio, GPIO.OUT, initial=GPIO.LOW)
     displayOnLCD("", LCDMessage, verbose)
-    bellRelayState = True
-    GPIO.output(bellRelayGpio, bellRelayState)
+    GPIO.output(bellRelayGpio, True)
     sleep(1)
     GPIO.output(bellRelayGpio, False)
     GPIO.cleanup(bellRelayGpio)
@@ -78,15 +68,7 @@ timeNow = dateTimeNow.strftime("%H:%M")
 
 def pageLinks():
 
-    print('<a href="index.py?ringSchoolBell=1"><strong>RING THE BELL</strong></a>'
-        + '\n<br>\n<br>\n<br><a href="ringTimes.py">Times</a>'
-        + "\n<br>"
-        + '\n<br><a href="schoolBreaks.py">Breaks</a>'
-        + "\n<br>"
-        + '\n<br><a href="ringPatterns.py">Patterns</a>'
-        + "\n<br>"
-        + '\n<br><a href="status.py">Status</a>'
-        + '\n<br>')
+    print('<div class="bellButton"><a href="index.py?ringSchoolBell=1" class="mybutton"><strong>RING THE BELL</strong></a></div>')
 
 
 def pageFooter():
@@ -106,17 +88,17 @@ def pageBody():
     ) = nextRing(cursor, dateNow, timeNow, verbose)
     nextRingDate = datetime.strftime(nextRingDate, "%Y-%m-%d")
 
-    print("\n<br>Current date and Time"
-        + "\n<br>&emsp;%s \n<br>&emsp;%s" % (dateNow, timeNow)
+    print("\n<br>Current Date:"
+        + '\n<br>&emsp;%s' % (dateNow)
         + "\n<br>"
-        + "\n<br>Next bell:"
+        + "\nNext bell:"
         + "\n<br>&emsp;%s, %s" % (nextRingDate, nextRingDay)
         + "\n<br>&emsp;&emsp;%s, %s" % (nextRingTime, ringTimeName)
         + "\n<br>")
 
-
 if __name__ == "__main__":
     webPageHeader()
+    pageNav()
     pageLinks()
     pageBody()
     webPageFooter()
@@ -126,8 +108,3 @@ db_close_cursor(cnx, cursor, verbose)
 
 # close db
 db_disconnect(cnx, verbose)
-
-print("""
-</body>
-</html>
-""")

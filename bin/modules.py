@@ -253,7 +253,49 @@ def validateTime(time, verbose):
 
 
 def webPageHeader():
-    print ("<hr>")
+    print("Content-type: text/html")
+    print("""
+    <html>
+    <head>
+        <title>School Bell</title>
+        <link rel="stylesheet" href="./style.css">
+        <script>
+            function startTime() {
+            const today = new Date();
+            let h = today.getHours();
+            let m = today.getMinutes();
+            let s = today.getSeconds();
+            m = checkTime(m);
+            s = checkTime(s);
+            document.getElementById('txt').innerHTML =  "&emsp;" + h + ":" + m + ":" + s;
+            setTimeout(startTime, 1000);
+            }
+
+            function checkTime(i) {
+            if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+            return i;
+            }
+        </script>
+    </head>
+    <body onload="startTime()">
+    """)
+
+def pageNav():
+    print ("""
+        <nav id='menu'>
+            <ul class='left'>
+                <li class='title'>School Bells</li>
+                <li><a href='index.py'>Home</a></li>
+                <li><a href='ringTimes.py'>Times</a></li>
+                <li><a href='schoolBreaks.py'>Breaks</a></li>
+                <li><a href='ringPatterns.py'>Patterns</a></li>
+                <li><a href='status.py'>Status</a></li>
+            </ul>
+            <ul class='right'>
+                <li><span class='txt'>Current time:</span> <div id='txt'></div></li>
+            </ul>
+        </nav>
+        """)
 
 
 def webPageFooter():
@@ -265,6 +307,11 @@ def webPageFooter():
 
     for i in range(0, 5):
         print ("<br>\n")
+    
+    print("""
+        </body>
+        </html>
+        """)
 
 
 def countEntriesInDatabase(tableName, cursor, verbose):
