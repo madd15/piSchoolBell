@@ -2,13 +2,6 @@
 # -*- coding: utf-8 -*-
 # Encoding: UTF-8
 
-import cgi
-import cgitb
-
-cgitb.enable()  # for troubleshooting
-
-from datetime import datetime
-
 from modules import (
     nextRing,
     webPageFooter,
@@ -18,22 +11,56 @@ from modules import (
     db_close_cursor,
     db_disconnect,
     db_query,
+    bellRelayGpio,
+    displayOnLCD,
 )
+from time import sleep
+from datetime import datetime
+import cgi
+import cgitb
+
+cgitb.enable()  # for troubleshooting
+
+
+try:
+    import RPi.GPIO as GPIO
+except RuntimeError:
+    print("Error importing RPi.GPIO!")
+
+
+ringSchoolBell = False
 
 verbose = False
 
-print "Content-type: text/html"
-print
+fs = cgi.FieldStorage()
 
-print """
+print("Content-type: text/html")
+
+print("""
 <html>
-
-<head><title>piSchoolBell</title></head>
- 
+<head><title>School Bell</title></head>
 <body>
- 
-<h3> piSchoolBell </h3>
-"""
+<h3>School Bell</h3>
+""")
+
+for key in fs.keys():
+    if (key == "ringSchoolBell" and fs[key].value == "1"):
+        ringSchoolBell = True
+
+if ringSchoolBell:
+    bellRelayState = False
+    LCDMessage = "Ringing Bell......"
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
+    GPIO.setup(bellRelayGpio, GPIO.OUT, initial=GPIO.LOW)
+    displayOnLCD("", LCDMessage, verbose)
+    bellRelayState = True
+    GPIO.output(bellRelayGpio, bellRelayState)
+    sleep(1)
+    GPIO.output(bellRelayGpio, False)
+    GPIO.cleanup(bellRelayGpio)
+    LCDMessage = ""
+    displayOnLCD("", LCDMessage, verbose)
 
 # connect to database
 cnx = db_connect(verbose)
@@ -51,26 +78,15 @@ timeNow = dateTimeNow.strftime("%H:%M")
 
 def pageLinks():
 
-    print '\n<br><a href="upcomingRings.py">Upcoming rings</a>'
-
-    print "\n<br>"
-
-    print "\n<br>"
-    print '\n<br><a href="ringTimes.py">Ring times</a>'
-
-    print "\n<br>"
-    print '\n<br><a href="schoolBreaks.py">Breaks</a>'
-
-    # print '\n<br>'
-    # print '\n<br><a href="extraDays.py">Extra school days</a>'
-
-    print "\n<br>"
-    print '\n<br><a href="ringPatterns.py">Ring patterns</a>'
-
-    print "\n<br>"
-
-    print "\n<br>"
-    print '\n<br><a href="status.py">Status</a>'
+    print('<a href="index.py?ringSchoolBell=1"><strong>RING THE BELL</strong></a>'
+        + '\n<br>\n<br>\n<br><a href="ringTimes.py">Times</a>'
+        + "\n<br>"
+        + '\n<br><a href="schoolBreaks.py">Breaks</a>'
+        + "\n<br>"
+        + '\n<br><a href="ringPatterns.py">Patterns</a>'
+        + "\n<br>"
+        + '\n<br><a href="status.py">Status</a>'
+        + '\n<br>')
 
 
 def pageFooter():
@@ -88,31 +104,22 @@ def pageBody():
         ringPatternName,
         ringPattern,
     ) = nextRing(cursor, dateNow, timeNow, verbose)
+    nextRingDate = datetime.strftime(nextRingDate, "%Y-%m-%d")
 
-    print "\n<br>%s \n<br>%s" % (dateNow, timeNow)
-
-    print "\n<br>"
-
-    print "\n<br>Next ring:"
-    print ("\n<br>&nbsp;&nbsp;&nbsp;&nbsp%s, %s" % (nextRingDate, nextRingDay))
-    print (
-        "\n<br>&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp%s, %s"
-        % (nextRingTime, ringTimeName)
-    )
-    print (
-        "\n<br>&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp%s, %s"
-        % (ringPatternName, ringPattern)
-    )
-
-    print "\n<br>"
+    print("\n<br>Current date and Time"
+        + "\n<br>&emsp;%s \n<br>&emsp;%s" % (dateNow, timeNow)
+        + "\n<br>"
+        + "\n<br>Next bell:"
+        + "\n<br>&emsp;%s, %s" % (nextRingDate, nextRingDay)
+        + "\n<br>&emsp;&emsp;%s, %s" % (nextRingTime, ringTimeName)
+        + "\n<br>")
 
 
 if __name__ == "__main__":
     webPageHeader()
-    pageBody()
     pageLinks()
+    pageBody()
     webPageFooter()
-
 
 # close cursor
 db_close_cursor(cnx, cursor, verbose)
@@ -120,11 +127,7 @@ db_close_cursor(cnx, cursor, verbose)
 # close db
 db_disconnect(cnx, verbose)
 
-print """
- 
-
- 
+print("""
 </body>
-
 </html>
-"""
+""")

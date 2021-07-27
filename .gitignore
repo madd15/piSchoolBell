@@ -1,1 +1,10 @@
 .vscode/settings.json
+/Adafruit_Python_CharLCD/**
+/dist/**
+Adafruit_Python_CharLCD/Adafruit_CharLCD/Adafruit_CharLCD.py
+Adafruit_Python_CharLCD/examples/char_lcd_backpack.py
+Adafruit_Python_CharLCD/examples/char_lcd_mcp.py
+Adafruit_Python_CharLCD/examples/char_lcd_plate.py
+Adafruit_Python_CharLCD/examples/char_lcd_rgb_pwm.py
+Adafruit_Python_CharLCD/examples/char_lcd_rgb.py
+Adafruit_Python_CharLCD/examples/char_lcd.py

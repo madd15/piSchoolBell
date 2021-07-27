@@ -2,13 +2,6 @@
 # -*- coding: utf-8 -*-
 # Encoding: UTF-8
 
-import cgi, MySQLdb, re
-import cgitb
-
-cgitb.enable()  # for troubleshooting
-
-from datetime import datetime
-
 from modules import (
     htmlFormEscape,
     validateDate,
@@ -20,6 +13,14 @@ from modules import (
     db_disconnect,
     db_query,
 )
+from datetime import datetime
+import cgi
+import MySQLdb
+import re
+import cgitb
+
+cgitb.enable()  # for troubleshooting
+
 
 addSchoolBreak = False  # will display form to add break
 
@@ -40,13 +41,12 @@ verbose = False
 
 fs = cgi.FieldStorage()
 
-print "Content-type: text/html"
-print
+print ("Content-type: text/html")
 
-print """
+print ("""
 <html>
 
-<head><title>piSchoolBell - breaks</title></head>
+<head><title>School Bell - Breaks</title></head>
 
 <style>
 table, th, td {
@@ -56,8 +56,8 @@ table, th, td {
  
 <body>
  
-<h3> piSchoolBell - breaks</h3>
-"""
+<h3>School Bell - Breaks</h3>
+""")
 
 
 # connect to database
@@ -104,18 +104,18 @@ if deleteSchoolBreakId:  # delete break
     try:
         result, rowCount = db_query(cursor, query, verbose)  # run query
     except MySQLdb.Error as e:
-        print "\n<br>Error: Could not delete break \n<br>%s" % e
-        print "\n<br>SQL: %s" % query
+        print ("\n<br>Error: Could not delete break \n<br>%s" % e
+            + "\n<br>SQL: %s" % query)
     else:
         if rowCount:
-            print "\n<br>Deleted break with id = %s" % deleteSchoolBreakId
+            print ("\n<br>Deleted break with id = %s" % deleteSchoolBreakId)
 
 elif newSchoolBreakName:  # add break
     if newEndDate == "":  # no end date stated
         newEndDate = newStartDate
 
     if not re.match("^[a-zA-Z0-9,. ]{1,100}$", newSchoolBreakName):
-        print (
+        print(
             "\n<br>Error: \n<br>Illegal characters in name - "
             + newSchoolBreakName
             + " "
@@ -126,7 +126,7 @@ elif newSchoolBreakName:  # add break
     elif not re.match("^[0-9-]{1,10}$", newStartDate) or not validateDate(
         newStartDate, verbose
     ):
-        print (
+        print(
             "\n<br>Error: \n<br>Illegal date, characters or length in start date - "
             + newStartDate
             + " "
@@ -137,7 +137,7 @@ elif newSchoolBreakName:  # add break
     elif not re.match("^[0-9-]{1,10}$", newEndDate) or not validateDate(
         newEndDate, verbose
     ):
-        print (
+        print(
             "\n<br>Error: \n<br>Illegal date, characters or length in end date - "
             + newEndDate
             + " "
@@ -145,11 +145,8 @@ elif newSchoolBreakName:  # add break
             "\n<br>Only digits, spaces and - allowed "
             "\n<br>Max 100 characters"
         )
-    # elif newStartDate < dateNow:
-    #    print ("\n<br>Error: \n<br>Start date occurs earlier than today - " + newStartDate + " < " + dateNow + " "
-    #           )
     elif newEndDate < dateNow:
-        print (
+        print(
             "\n<br>Error: \n<br>End date occurs earlier than today - "
             + newEndDate
             + " < "
@@ -157,7 +154,7 @@ elif newSchoolBreakName:  # add break
             + " "
         )
     elif newEndDate < newStartDate:
-        print (
+        print(
             "\n<br>Error: \n<br>End date occurs earlier than start date - "
             + newEndDate
             + " < "
@@ -165,7 +162,7 @@ elif newSchoolBreakName:  # add break
             + " "
         )
     elif newEndDate < dateNow:
-        print (
+        print(
             "\n<br>Error: \n<br>End date occurs earlier than today - "
             + newEndDate
             + " < "
@@ -184,22 +181,22 @@ elif newSchoolBreakName:  # add break
         try:  # insert break in to db
             result, rowCount = db_query(cursor, query, verbose)  # run query
         except (MySQLdb.IntegrityError) as e:  # break name already in database
-            print (
+            print(
                 "Error: \n<br>There was already a break with that name. "
                 "\n<br>    Pattern not added "
                 "\n<br>%s" % e
             )
         except MySQLdb.Error as e:
-            print "\n<br>Error: Could not add break \n<br>%s" % e
-            print "\n<br>SQL: %s" % query
+            print ("\n<br>Error: Could not add break \n<br>%s" % e
+                + "\n<br>SQL: %s" % query)
         else:
-            print "\n<br>Added new break"
+            print ("\n<br>Added new break")
 
 elif updateSchoolBreakId:  # update break
     if updateEndDate == "":  # no end date stated
         updateEndDate = updateStartDate
     if not re.match("^[a-zA-Z0-9,. ]{1,100}$", updateSchoolBreakName):
-        print (
+        print(
             "Error: \n<br>Illegal characters in name - " + updateSchoolBreakName + " "
             "\n<br>No special characters (including Swedish etc.) allowed "
             "\n<br>Only characters, digits, spaces and ,. allowed "
@@ -208,7 +205,7 @@ elif updateSchoolBreakId:  # update break
     elif not re.match("^[0-9-]{1,10}$", updateStartDate) or not validateDate(
         updateStartDate, verbose
     ):
-        print (
+        print(
             "Error: \n<br>Illegal date, characters or length in start date - "
             + updateStartDate
             + " "
@@ -219,7 +216,7 @@ elif updateSchoolBreakId:  # update break
     elif not re.match("^[0-9-]{1,10}$", updateEndDate) or not validateDate(
         updateEndDate, verbose
     ):
-        print (
+        print(
             "Error: \n<br>Illegal date, characters or length in end date - "
             + updateEndDate
             + " "
@@ -227,11 +224,8 @@ elif updateSchoolBreakId:  # update break
             "\n<br>Only digits, spaces and , allowed "
             "\n<br>Max 100 characters!"
         )
-    # elif updateStartDate < dateNow:
-    #    print ("\n<br>Error: \n<br>Start date occurs earlier than today - " + updateStartDate + " < " + dateNow + " "
-    #           )
     elif updateEndDate < dateNow:
-        print (
+        print(
             "\n<br>Error: \n<br>End date occurs earlier than today - "
             + updateEndDate
             + " < "
@@ -239,7 +233,7 @@ elif updateSchoolBreakId:  # update break
             + " "
         )
     elif updateEndDate < updateStartDate:
-        print (
+        print(
             "\n<br>Error: \n<br>End date occurs earlier than start date - "
             + updateEndDate
             + " < "
@@ -247,7 +241,7 @@ elif updateSchoolBreakId:  # update break
             + " "
         )
     elif updateEndDate < dateNow:
-        print (
+        print(
             "\n<br>Error: \n<br>End date occurs earlier than today - "
             + updateEndDate
             + " < "
@@ -266,42 +260,24 @@ elif updateSchoolBreakId:  # update break
         try:  # update break
             result, rowCount = db_query(cursor, query, verbose)  # run query
         except (MySQLdb.IntegrityError) as e:  # break name already in database
-            print (
+            print(
                 "Error: \n<br>There was already a break with that name. "
                 "\n<br>Pattern not updated "
                 "\n<br>%s>" % e
             )
         except MySQLdb.Error as e:
-            print "\n<br>Error: Could not update break \n<br>%s" % e
-            print "\n<br>SQL: %s" % query
+            print ("\n<br>Error: Could not update break \n<br>%s" % e
+                + "\n<br>SQL: %s" % query)
         else:
             if rowCount:
-                print "\n<br>Updated break with id = %s" % updateSchoolBreakId
+                print ("\n<br>Updated break with id = %s" % updateSchoolBreakId)
 
 
 def pageLinks():
 
-    print '\n<br><a href="schoolBreaks.py">Reset page</a>'
-
-    print '&emsp;<a href="schoolBreaks.py?addSchoolBreak=1">Add another break</a>'
-
-    print "\n<br>"
-    print '\n<br><a href="index.py">Home</a>'
-
-    print "\n<br>"
-    print '\n<br><a href="upcomingRings.py">Upcoming rings</a>'
-
-    # print '\n<br>'
-    print '\n<br><a href="ringTimes.py">Ring times</a>'
-
-    # print '\n<br>'
-    # print '\n<br><a href="schoolBreaks.py">Breaks</a>'
-
-    # print '\n<br>'
-    # print '\n<br><a href="extraDays.py">Extra school days</a>'
-
-    # print '\n<br>'
-    print '\n<br><a href="ringPatterns.py">Ring patterns</a>'
+    print ('<a href="index.py">Home</a>'
+        + '\n<br>\n<br><a href="ringTimes.py">Times</a>'
+        + '\n<br><a href="ringPatterns.py">Patterns</a>')
 
 
 def pageBody():
@@ -311,16 +287,18 @@ def pageBody():
 
     result, rowCount = db_query(cursor, query, verbose)  # run query
     if rowCount:  # display breaks in a table
-        print "\n<br>\n<br>"
-        print '<table style="width:400px">'
-        print "<tr>"
-        print "<th>Id</th>"
-        print "<th>Break name</th>"
-        print "<th>Start date</th>"
-        print "<th>End date</th>"
-        print "<th></th>"
-        print "<th></th>"
-        print "</tr>"
+        print ("\n<br>\n<br>"
+            + '<a href="schoolBreaks.py?addSchoolBreak=1">Add New Break</a>'
+            + "\n<br>\n<br>"
+            + '<table style="width:400px">'
+            + "<tr>"
+            + "<th>Id</th>"
+            + "<th>Break name</th>"
+            + "<th>Start date</th>"
+            + "<th>End date</th>"
+            + "<th></th>"
+            + "<th></th>"
+            + "</tr>")
 
         for row in result:
             schoolBreakId = row[0]
@@ -335,88 +313,79 @@ def pageBody():
                 editStartDate = startDate
                 editEndDate = endDate
 
-            print "<tr>"
-            print "<th>%s</th>" % schoolBreakId
-            print "<th>%s</th>" % schoolBreakName.encode("Latin1")
-            print "<th>%s</th>" % startDate
-            print "<th>%s</th>" % endDate
-            print '<th><a href="schoolBreaks.py?deleteSchoolBreakId=%s">Delete</a></th>' % schoolBreakId
-            print '<th><a href="schoolBreaks.py?editSchoolBreakId=%s">Edit</a></th>' % schoolBreakId
-            print "</tr>"
+            print ("<tr>"
+                + "<th>%s</th>" % schoolBreakId
+                + "<th>%s</th>" % schoolBreakName.encode("Latin1")
+                + "<th>%s</th>" % startDate
+                + "<th>%s</th>" % endDate
+                + '<th><a href="schoolBreaks.py?deleteSchoolBreakId=%s">Delete</a></th>' % schoolBreakId
+                + '<th><a href="schoolBreaks.py?editSchoolBreakId=%s">Edit</a></th>' % schoolBreakId
+                + "</tr>")
 
-        print "</table"
+        print ("</table")
 
     if editSchoolBreakId:
-        print "\n<br><br>"
-        print "<h3>Edit break</h3>"
-
-        print '<form action="/schoolBreaks.py">'
-        print "Pattern id:<br>"
-        print '<input type="text" name="updateSchoolBreakId" value="%s">' % editSchoolBreakId
-
-        print "<br><br><br>"
-        print "Break name:<br>"
-        print '<input type="text" name="updateSchoolBreakName" value="%s">' % editSchoolBreakName
-        print ("State a name for your break. <br><br>" "\nMax 100 characters. <br>")
-
-        print "<br><br>"
-        print "Start date:<br>"
-        print '<input type="text" name="updateStartDate" value="%s">' % editStartDate
-        print (
-            "State date in the form: YY-MM-DD. <br><br>"
-            "\nOnly digits and - are allowed. <br>"
-        )
-
-        print "<br><br>"
-        print "End date:<br>"
-        print '<input type="text" name="updateEndDate" value="%s">' % editEndDate
-        print (
-            "State date in the form: YY-MM-DD. <br><br>"
-            "\nOnly digits and - are allowed. <br>"
-        )
-
-        print "<br><br>"
-        print '<input type="submit" value="Submit">'
-        print "</form>"
+        print ("\n<br><br>"
+            + "<h3>Edit break</h3>"
+            + '<form action="/schoolBreaks.py">'
+            + "Pattern id:<br>"
+            + '<input type="text" name="updateSchoolBreakId" value="%s">' % editSchoolBreakId
+            + "<br><br><br>"
+            + "Break name:<br>"
+            + '<input type="text" name="updateSchoolBreakName" value="%s">' % editSchoolBreakName
+            +(
+                "State a name for your break. <br><br>"
+                "\nMax 100 characters. <br>"
+                )
+            + "<br><br>"
+            + "Start date:<br>"
+            + '<input type="text" name="updateStartDate" value="%s">' % editStartDate
+            + (
+                "State date in the form: YY-MM-DD. <br><br>"
+                "\nOnly digits and - are allowed. <br>"
+                )
+            + "<br><br>"
+            + "End date:<br>"
+            + '<input type="text" name="updateEndDate" value="%s">' % editEndDate
+            + (
+                "State date in the form: YY-MM-DD. <br><br>"
+                "\nOnly digits and - are allowed. <br>"
+                )
+            + "<br><br>"
+            + '<input type="submit" value="Submit">'
+            + "</form>")
 
     if addSchoolBreak:  # display form to add break
-        print "\n<br><br>"
-        print "<h3>Add break</h3>"
-
-        print '<form action="/schoolBreaks.py">'
-        print "Break name:<br>"
-        print '<input type="text" name="newSchoolBreakName" value="Break name">'
-        print ("State a name for your break. <br><br>" "\nMax 100 characters. <br>")
-
+        print ("\n<br><br>"
+            + "<h3>Add break</h3>"
+            + '<form action="/schoolBreaks.py">'
+            + "Break name:<br>"
+            + '<input type="text" name="newSchoolBreakName" value="Break name">'
+            + ("State a name for your break. <br><br>" "\nMax 100 characters. <br>"))
         dateTimeNow = datetime.now()
         dateNow = str(dateTimeNow.strftime("%Y-%m-%d"))
-        print "<br><br>"
-        print "Start date:<br>"
-        print '<input type="text" name="newStartDate" value="%s">' % dateNow
-        print (
-            "State date in the form: YY-MM-DD. <br><br>"
-            "\nOnly digits and - are allowed. <br>"
-        )
-
-        print "<br><br>"
-        print "End date:<br>"
-        print '<input type="text" name="newEndDate" value="%s">' % dateNow
-        print (
-            "State date in the form: YY-MM-DD. <br><br>"
-            "\nOnly digits and - are allowed. <br>"
-        )
-
-        print "<br><br>"
-        print '<input type="submit" value="Submit">'
-        print "</form>"
-
+        print ("<br><br>"
+            + "Start date:<br>"
+            + '<input type="text" name="newStartDate" value="%s">' % dateNow
+            + (
+                "State date in the form: YY-MM-DD. <br><br>"
+                "\nOnly digits and - are allowed. <br>"
+                )
+            + "<br><br>"
+            + "End date:<br>"
+            + '<input type="text" name="newEndDate" value="%s">' % dateNow
+            +(
+                "State date in the form: YY-MM-DD. <br><br>"
+                "\nOnly digits and - are allowed. <br>"
+                )
+            + "<br><br>"
+            + '<input type="submit" value="Submit">'
+            + "</form>")
 
 if __name__ == "__main__":
     webPageHeader()
     pageLinks()
     pageBody()
-    print "\n<br>"
-    pageLinks()
     webPageFooter()
 
 # close cursor
@@ -425,11 +394,7 @@ db_close_cursor(cnx, cursor, verbose)
 # close db
 db_disconnect(cnx, verbose)
 
-print """
- 
-
- 
+print ("""
 </body>
-
 </html>
-"""
+""")

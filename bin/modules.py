@@ -2,7 +2,12 @@
 # -*- coding: utf-8 -*-
 # Encoding: UTF-8
 
-import os, sys, MySQLdb, time, urllib2, socket
+import os
+import sys
+import MySQLdb
+import time
+import urllib2
+import socket
 
 import Adafruit_CharLCD as LCD
 
@@ -37,35 +42,35 @@ drygPath = config.get("dryg", "drygPath").strip(" ")
 
 
 def onError(errorCode, extra):
-    print "\nError %s" % errorCode
+    print ("\nError %s" % errorCode)
     if errorCode in (1, 12):
-        print extra
+        print (extra)
         usage(errorCode)
     elif errorCode == 2:
-        print "No options given"
+        print ("No options given")
         usage(errorCode)
     elif errorCode in (3, 4, 5, 8):  # stops execution
-        print extra
+        print (extra)
         sys.exit(errorCode)
     elif errorCode in (6, 7):  # returns to script
-        print extra
+        print (extra)
         return
 
 
 def usage(exitCode):
-    print "\nUsage:"
-    print "***************************************-"
-    print "%s -1 <text line 1> -2 <text line 2>" % sys.argv[0]
-    print "\nMisc options:"
-    print "-v    verbose output"
-    print "-h    prints this"
+    print ("\nUsage:"
+        + "***************************************-"
+        + "%s -1 <text line 1> -2 <text line 2>" % sys.argv[0]
+        + "\nMisc options:"
+        + "-v    verbose output"
+        + "-h    prints this")
 
     sys.exit(exitCode)
 
 
 def db_connect(verbose):
     if verbose:
-        print "\n*** Connecting to db..."
+        print ("\n*** Connecting to db...")
     dbconfig = ConfigParser()
     dbconfig.read("/home/pi/bin/piSchoolBell/mysql-config.ini")
 
@@ -77,14 +82,13 @@ def db_connect(verbose):
     cnx = MySQLdb.connect(
         host=servername, user=username, passwd=password, db=dbname, charset="utf8"
     )
-    # cnx.autocommit(True)
 
     return cnx
 
 
 def db_create_cursor(cnx, verbose):
     if verbose:
-        print "\n*** Creating cursor..."
+        print ("\n*** Creating cursor...")
 
     cursor = cnx.cursor()
 
@@ -93,22 +97,22 @@ def db_create_cursor(cnx, verbose):
 
 def db_close_cursor(cnx, cursor, verbose):
     if verbose:
-        print "\n*** Closing db cursor..."
+        print ("\n*** Closing db cursor...")
     cursor.close()
     if verbose:
-        print "    Committing db changes..."
+        print ("    Committing db changes...")
     cnx.commit()
 
 
 def db_disconnect(cnx, verbose):
     if verbose:
-        print "\n*** Disconnecting from db..."
+        print ("\n*** Disconnecting from db...")
     cnx.close()
 
 
 def db_query(cursor, query, verbose):
     if verbose:
-        print "\n*** Running query: \n    %s" % query
+        print ("\n*** Running query: \n    %s" % query)
     cursor.execute(query)
     results = cursor.fetchall()
 
@@ -133,24 +137,6 @@ def htmlFormEscape(text):
         "%D6": u"\00D6",  # Ö
     }
 
-    # normal
-    # html_escape_table = {"%E5": "å",
-    #                     "%E4": "ä",
-    #                     "%F6": "ö",
-    #                     "%C5": "Å",
-    #                     "%C4": "Ä",
-    #                     "%D6": "Ö",
-    #                     }
-
-    # ascii
-    # html_escape_table = {"%E5": "134",
-    #                     "%E4": "132",
-    #                     "%F6": "148",
-    #                     "%C5": "143",
-    #                     "%C4": "142",
-    #                     "%D6": "153",
-    #                     }
-
     return "".join(html_escape_table.get(c, c) for c in text)
 
 
@@ -161,21 +147,12 @@ def nextRing(cursor, dateNow, timeNow, verbose):
 
     while True:
         # find first work day
-        query = (
-            "SELECT date, dayNumber FROM days WHERE "
-            "date >= '" + dateNow + "' "
-            "AND "
-            "isWorkDay = '1' "
-            "LIMIT 1"
-        )
-        result, rowCount = db_query(cursor, query, verbose)  # run query
-        if rowCount:
+        dayNumber = datetime.strptime(dateNow, "%Y-%m-%d").weekday()
+        if dayNumber not in [5, 6]:
             isWorkDay = True
             if verbose:
-                print "*** This is a school day"
-            for row in result:
-                nextRingDate = row[0]  # this is the day we are going to look for
-                dayNumber = row[1]
+                print ("*** This is a school day - %s" % (dateNow))
+            nextRingDate = datetime.strptime(dateNow, "%Y-%m-%d")
 
         # check if this is on a break
         if isWorkDay:
@@ -188,22 +165,21 @@ def nextRing(cursor, dateNow, timeNow, verbose):
             if not rowCount:  # nothing found, not on a break
                 isNotOnBreak = True
                 if verbose:
-                    print "*** This is not on a break"
+                    print ("*** This is not on a break")
 
         # find ring time
         if isNotOnBreak:
             if verbose:
-                print "\n*** Checking if it is time to ring the bell..."
+                print ("\n*** Checking if it is time to ring the bell...")
             query = (
                 "SELECT ringTimeName, weekDays, TIME_FORMAT(ringTime, '%H:%i') as ringTime, ringPatternId "
                 "FROM ringTimes WHERE "
                 "ringTime >= '" + timeNow + "' "
-                "LIMIT 1"
             )
             result, rowCount = db_query(cursor, query, verbose)  # run query
             if rowCount:
                 if verbose:
-                    print "*** It is time to ring bell"
+                    print ("*** Ring times found")
                 for row in result:
                     ringTimeName = row[0]
                     weekDays = row[1]
@@ -212,14 +188,16 @@ def nextRing(cursor, dateNow, timeNow, verbose):
                 if weekDays[dayNumber] == "1":
                     foundRingTime = True
                     if verbose:
-                        print "*** This ring time is valid today"
+                        print ("*** Valid ring time found")
 
         if foundRingTime:
             break
         else:
-            dateNow = datetime.strptime(dateNow, "%Y-%m-%d")  # convert to time object
+            dateNow = datetime.strptime(
+                dateNow, "%Y-%m-%d")  # convert to time object
             dateNow = dateNow + timedelta(days=1)  # add one day
-            dateNow = datetime.strftime(dateNow, "%Y-%m-%d")  # convert to string
+            dateNow = datetime.strftime(
+                dateNow, "%Y-%m-%d")  # convert to string
 
             timeNow = "00:00"  # set time to midnight on the parsed date
 
@@ -230,6 +208,8 @@ def nextRing(cursor, dateNow, timeNow, verbose):
     )
     result, rowCount = db_query(cursor, query, verbose)  # run query
     if rowCount:
+        if verbose:
+            print ("*** Valid Ring time found")
         for row in result:
             ringPatternName = row[0]
             ringPattern = row[1]
@@ -254,7 +234,7 @@ def validateDate(date, verbose):
     except ValueError:
         dateValid = False
         if verbose:
-            print "*** Incorrect data format, should be YYYY-MM-DD"
+            print ("*** Incorrect data format, should be YYYY-MM-DD")
 
     return dateValid
 
@@ -267,28 +247,24 @@ def validateTime(time, verbose):
     except ValueError:
         timeValid = False
         if verbose:
-            print "*** Incorrect time format, should be hh:mm"
+            print ("*** Incorrect time format, should be hh:mm")
 
     return timeValid
 
 
 def webPageHeader():
-    print "<hr>"
+    print ("<hr>")
 
 
 def webPageFooter():
     for i in range(0, 5):
-        print "<br>\n"
+        print ("<br>\n")
 
-    print "<br>\n<hr>"
-    print "<br>\n&copy; Jonix 2018"
-    print (
-        '<br>\n<a href="mailto:jonsagebrand@gmail.com?subject=piShoolBell@%s">jonsagebrand@gmail.com</a>'
-        % socket.gethostname()
-    )
+    print ("<br>\n<hr>"
+    + "<br>\n&copy; Blackwood High School")
 
     for i in range(0, 5):
-        print "<br>\n"
+        print ("<br>\n")
 
 
 def countEntriesInDatabase(tableName, cursor, verbose):
@@ -327,19 +303,19 @@ def isRingDay(date, weekNumber, cursor, verbose):
     )
     result, rowCount = db_query(cursor, query, verbose)  # run query
     if verbose:
-        print "<br>\n*** Row count: %s" % rowCount
+        print ("<br>\n*** Row count: %s" % rowCount)
     if rowCount:
         isWorkDay = True
         if verbose:
-            print "<br>\n*** This is a school day"
+            print ("<br>\n*** This is a school day")
         for row in result:
             ringDate = row[0]  # this is the day we are going to look for
             weekNumber = row[1]
             dayNumber = row[2]
             if verbose:
-                print "<br>\n*** Date: %s" % ringDate
-                print "<br>\n*** Week number: %s" % weekNumber
-                print "<br>\n*** Day number: %s" % dayNumber
+                print ("<br>\n*** Date: %s" % ringDate
+                    + "<br>\n*** Week number: %s" % weekNumber
+                    + "<br>\n*** Day number: %s" % dayNumber)
 
     # check if this is on a break
     if isWorkDay:
@@ -350,16 +326,16 @@ def isRingDay(date, weekNumber, cursor, verbose):
         )
         result, rowCount = db_query(cursor, query, verbose)  # run query
         if verbose:
-            print "<br>\n*** Row count: %s" % rowCount
+            print ("<br>\n*** Row count: %s" % rowCount)
         if not rowCount:  # nothing found, not on a break
             isNotOnBreak = True
             if verbose:
-                print "<br>\n*** This is not on a break"
+                print ("<br>\n*** This is not on a break")
         else:
             for row in result:
                 breakName = row[0]
                 if verbose:
-                    print "<br>\n*** Break name: %s" % breakName
+                    print ("<br>\n*** Break name: %s" % breakName)
 
     return isWorkDay, isNotOnBreak, weekNumber, dayNumber, breakName
 
@@ -371,7 +347,7 @@ def findRingTimes(date, dayNumber, cursor, verbose):
 
     # find ring times
     if verbose:
-        print "<br>\n*** Checking if it is time to ring the bell..."
+        print ("<br>\n*** Checking if it is time to ring the bell...")
     query = (
         "SELECT ringTimeName, weekDays, TIME_FORMAT(ringTime, '%H:%i') as ringTime, ringPatternId FROM ringTimes "
         "ORDER BY ringTime ASC"
@@ -379,7 +355,7 @@ def findRingTimes(date, dayNumber, cursor, verbose):
     result, rowCount = db_query(cursor, query, verbose)  # run query
     if rowCount:
         if verbose:
-            print "<br>\n*** It is time to ring bell"
+            print ("<br>\n*** It is time to ring bell")
         for row in result:
             ringTimeName = row[0]
             weekDays = row[1]
@@ -388,18 +364,19 @@ def findRingTimes(date, dayNumber, cursor, verbose):
             if weekDays[dayNumber] == "1":
 
                 if verbose:
-                    print "<br>\n*** This ring time is valid today"
-                    print "<br>\n*** Ring time name: %s" % ringTimeName
-                    print "<br>\n*** Week days: %s" % weekDays
-                    print "<br>\n*** Ring time: %s" % ringTime
-                    print "<br>\n*** Ring pattern id: %s" % ringPatternId
+                    print ("<br>\n*** This ring time is valid today"
+                        + "<br>\n*** Ring time name: %s" % ringTimeName
+                        + "<br>\n*** Week days: %s" % weekDays
+                        + "<br>\n*** Ring time: %s" % ringTime
+                        + "<br>\n*** Ring pattern id: %s" % ringPatternId)
 
                 # find ring pattern
                 query = (
                     "SELECT ringPatternName, ringPattern FROM ringPatterns WHERE "
                     "ringPatternId = '" + str(ringPatternId) + "'"
                 )
-                result, rowCount = db_query(cursor, query, verbose)  # run query
+                result, rowCount = db_query(
+                    cursor, query, verbose)  # run query
                 if rowCount:
                     for row in result:
                         ringPatternName = row[0]
@@ -427,18 +404,18 @@ def internetAccess(testAddress, verbose):
     connected = False
 
     if verbose:
-        print "*** Looking up %s" % testAddress
+        print ("*** Looking up %s" % testAddress)
 
     try:
         urllib2.urlopen("http://%s" % testAddress, timeout=1)
     except urllib2.URLError as err:
         if verbose:
-            print "*** Error: \n    %s" % err
+            print ("*** Error: \n    %s" % err)
     else:
         connected = True
 
     if verbose and connected:
-        print "*** We are connected to internet"
+        print ("*** We are connected to internet")
 
     return connected
 
@@ -447,7 +424,7 @@ def getDayName(dayNumber, verbose):
     dayName = "Wrong day number"
 
     if verbose:
-        print "*** Getting day name from day number %s" % dayNumber
+        print ("*** Getting day name from day number %s" % dayNumber)
 
     if isinstance(dayNumber, basestring):
         dayName = int(dayNumber)
@@ -476,8 +453,8 @@ def writeToFile(logFile, message, verbose):
     message = "%s: %s" % (timeStamp, message)
 
     if verbose:
-        print "\n*** Writing to %s" % logFile
-        print "    %s" % message
+        print ("\n*** Writing to %s" % logFile
+            + "    %s" % message)
 
     with open(logFile, "a") as f:
         f.write("{}\n".format(message))
@@ -485,7 +462,7 @@ def writeToFile(logFile, message, verbose):
 
 def splitPath(path, verbose):
     if verbose:
-        print "\n*** Extracting directory, file name and extension from\n    %s ..." % path
+        print ("\n*** Extracting directory, file name and extension from\n    %s ..." % path)
 
     dirName = os.path.dirname(path)
 
@@ -494,9 +471,9 @@ def splitPath(path, verbose):
     extension = os.path.splitext(f)[1].strip(".")
 
     if verbose:
-        print "    Directory: %s" % dirName
-        print "    File name: %s" % fileName
-        print "    Extension: %s" % extension
+        print ("    Directory: %s" % dirName
+            + "    File name: %s" % fileName
+            + "    Extension: %s" % extension)
 
     return dirName, fileName, extension
 
@@ -520,10 +497,10 @@ def findUSBMountPoint(USBDir, labelMatch, verbose):
     foundDirs = []
 
     if verbose:
-        print "\n*** Searching for USB mounted at %s \n    with label matching '%s' ..." % (
+        print ("\n*** Searching for USB mounted at %s \n    with label matching '%s' ..." % (
             USBDir,
             labelMatch,
-        )
+        ))
 
     for d in os.listdir(USBDir):
         path = os.path.join(USBDir, d)
@@ -533,17 +510,17 @@ def findUSBMountPoint(USBDir, labelMatch, verbose):
     if foundDirs:
         if verbose:
             if verbose:
-                print "*** Found USB: %s" % foundDirs[0]
+                print ("*** Found USB: %s" % foundDirs[0])
         return foundDirs[0]
     else:
         if verbose:
-            print "*** Did not find any USB"
+            print ("*** Did not find any USB")
         return ""
 
 
 def initialize_lcd(verbose):
     if verbose:
-        print "\n*** Initializing LCD..."
+        print ("\n*** Initializing LCD...")
 
     # read config for LCD
     lcd_rs = int(config.get("lcd", "lcd_rs").strip(" "))
@@ -585,7 +562,8 @@ def remove_leading_zero(string):
 def degree_sign(lcd, cursor, row):
     # degree symbol
     lcd.create_char(
-        1, [0b01100, 0b10010, 0b10010, 0b01100, 0b00000, 0b00000, 0b00000, 0b00000]
+        1, [0b01100, 0b10010, 0b10010, 0b01100,
+            0b00000, 0b00000, 0b00000, 0b00000]
     )
 
     lcd.set_cursor(cursor, row)
@@ -598,7 +576,8 @@ def degree_sign(lcd, cursor, row):
 def hourglass_symbol(lcd, cursor, row):
     # hourglass
     lcd.create_char(
-        2, [0b11111, 0b10001, 0b01110, 0b00100, 0b01010, 0b10001, 0b11111, 0b00000]
+        2, [0b11111, 0b10001, 0b01110, 0b00100,
+            0b01010, 0b10001, 0b11111, 0b00000]
     )
 
     lcd.set_cursor(cursor, row)
@@ -611,7 +590,8 @@ def hourglass_symbol(lcd, cursor, row):
 def infinity_symbol(lcd, cursor, row):
     # infinity
     lcd.create_char(
-        3, [0b00000, 0b00000, 0b01010, 0b10101, 0b10101, 0b01010, 0b00000, 0b00000]
+        3, [0b00000, 0b00000, 0b01010, 0b10101,
+            0b10101, 0b01010, 0b00000, 0b00000]
     )
 
     lcd.set_cursor(cursor, row)
@@ -628,8 +608,8 @@ def print_to_LCD(lcd, cursor, row, line, message, lcd_columns, verbose):
 
     orig_length = len(message)
     if verbose:
-        print "\nLine %s: '%s'" % (line, message)
-        print "*** Length: %s" % orig_length
+        print ("\nLine %s: '%s'" % (line, message)
+            + "*** Length: %s" % orig_length)
     # else:
     #    print "%s" % (message)
 
@@ -638,7 +618,7 @@ def print_to_LCD(lcd, cursor, row, line, message, lcd_columns, verbose):
     if spaces > 0:
         message = message.ljust(16, " ")
     if verbose:
-        print "*** Added %s space(s)" % spaces
+        print ("*** Added %s space(s)" % spaces)
 
     if t in message or inf in message:  # message contains special characters
         message_list = list(message)
@@ -659,7 +639,7 @@ def print_to_LCD(lcd, cursor, row, line, message, lcd_columns, verbose):
 
     if len(message) > lcd_columns:
         if verbose:
-            print "*** Scrolling"
+            print ("*** Scrolling")
         for i in range(lcd_columns - orig_length):
             time.sleep(0.5)
             lcd.move_left()
