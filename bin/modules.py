@@ -37,10 +37,6 @@ testAddress = config.get("misc", "testAddress").strip(" ")
 
 unicode_degree_sign = config.get("misc", "unicode_degree_sign").strip(" ")
 
-drygUri = config.get("dryg", "drygUri").strip(" ")
-drygPath = config.get("dryg", "drygPath").strip(" ")
-
-
 def onError(errorCode, extra):
     print ("\nError %s" % errorCode)
     if errorCode in (1, 12):
@@ -260,41 +256,60 @@ def webPageHeader():
         <title>School Bell</title>
         <link rel="stylesheet" href="./style.css">
         <script>
+            function init() {
+                date();
+                startTime();
+            }
+
+            function date() {
+                const today = new Date();
+                let d = checkTime(today.getDate());
+                let x = checkTime(today.getMonth() + 1);
+                let y = today.getFullYear();
+                document.getElementById('date').innerHTML =  "Current date: " + d + "/" + x + "/" + y;
+            }
+
             function startTime() {
-            const today = new Date();
-            let h = today.getHours();
-            let m = today.getMinutes();
-            let s = today.getSeconds();
-            m = checkTime(m);
-            s = checkTime(s);
-            document.getElementById('txt').innerHTML =  "&emsp;" + h + ":" + m + ":" + s;
-            setTimeout(startTime, 1000);
+                const today = new Date();
+                let h = today.getHours();
+                let m = checkTime(today.getMinutes());
+                let s = checkTime(today.getSeconds());
+                document.getElementById('time').innerHTML =  "Current time: " + h + ":" + m + ":" + s;
+                setTimeout(startTime, 1000);
             }
 
             function checkTime(i) {
-            if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
-            return i;
+                if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+                return i;
             }
         </script>
     </head>
-    <body onload="startTime()">
+    <body onload="init()">
+    <div class="container">
     """)
 
 def pageNav():
     print ("""
         <nav id='menu'>
+            <input type='checkbox' id='responsive-menu' onclick='updatemenu()'><label></label>
             <ul class='left'>
                 <li class='title'>School Bells</li>
                 <li><a href='index.py'>Home</a></li>
                 <li><a href='ringTimes.py'>Times</a></li>
                 <li><a href='schoolBreaks.py'>Breaks</a></li>
                 <li><a href='ringPatterns.py'>Patterns</a></li>
-                <li><a href='status.py'>Status</a></li>
+                <li><a class='dropdown-arrow' href='status.py'>Status</a>
+                    <ul class='sub-menus'>
+                        <li><a href='displayLogs.py'>Logs</a></li>
+                    </ul>
+                </li>
             </ul>
             <ul class='right'>
-                <li><span class='txt'>Current time:</span> <div id='txt'></div></li>
+                <li><div id='date'></div></li>
+                <li><div id='time'></div></li>
             </ul>
         </nav>
+        <div class="main">
         """)
 
 
@@ -302,13 +317,14 @@ def webPageFooter():
     for i in range(0, 5):
         print ("<br>\n")
 
-    print ("<br>\n<hr>"
+    print ("</div><hr>"
     + "<br>\n&copy; Blackwood High School")
 
     for i in range(0, 5):
         print ("<br>\n")
     
     print("""
+        </div>
         </body>
         </html>
         """)

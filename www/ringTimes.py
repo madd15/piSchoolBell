@@ -192,15 +192,6 @@ elif updateRingTimeId:  # update ring time
             if rowCount:
                 print ("\n<br>Updated ring time with id = %s" % updateRingTimeId)
 
-
-def pageLinks():
-
-    print ('<a href="index.py">Home</a>'
-        + "\n<br>"
-        + '\n<br><a href="schoolBreaks.py">Breaks</a>'
-        + '\n<br><a href="ringPatterns.py">Patterns</a>')
-
-
 def pageBody():
 
     # get ring times
@@ -211,9 +202,9 @@ def pageBody():
     result, rowCount = db_query(cursor, query, verbose)  # run query
     if rowCount:  # display ring times in a table
         print ("\n<br>\n<br>"
-            + '<a href="ringTimes.py?addRingTime=1">Add New Time</a>'
+            + '<a class="addNew" href="ringTimes.py?addRingTime=1">Add New Time</a>'
             + "\n<br>\n<br>"
-            + '<table id="ringTimes" style="width:100%">'
+            + '<table id="ringTimes">'
             + "<tr>"
             + "<th>Time name</th>"
             + "<th>Ring time</th>"
@@ -262,8 +253,9 @@ def pageBody():
                     print ("<td class='onDay'>On</td>")
                 else:
                     print ("<td class='offDay'>Off</td>")
-            print ('<td><a href="ringTimes.py?deleteRingTimeId=%s">Delete</a> / <a href="ringTimes.py?editRingTimeId=%s">Edit</a></td>' % (ringTimeId, ringTimeId)
-                + "</tr>")
+            print ('<td><a class="delete" href="ringTimes.py?deleteRingTimeId=%s">Delete</a>' % ringTimeId
+                + '<a class="edit" href="ringTimes.py?editRingTimeId=%s">Edit</a>' % ringTimeId
+                + "</td></tr>")
 
         print ("</table")
 

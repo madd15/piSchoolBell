@@ -208,9 +208,9 @@ def pageBody():
     result, rowCount = db_query(cursor, query, verbose)  # run query
     if rowCount:  # display ring patterns in a table
         print ("\n<br>\n<br>"
-                '<a href="ringPatterns.py?addRingPattern=1">Add New Pattern</a>'
+                '<a class="addNew" href="ringPatterns.py?addRingPattern=1">Add New Pattern</a>'
                 "\n<br>\n<br>"
-                '<table style="width:400px">'
+                '<table>'
                 "<tr>"
                 "<th>Pattern name</th>"
                 "<th>Pattern</th>"
@@ -231,7 +231,8 @@ def pageBody():
             print ("<tr>"
                 + "<td>%s</td>" % ringPatternName.encode("Latin1")
                 + "<td>%s</td>" % ringPattern
-                + '<td><a href="ringPatterns.py?deleteRingPatternId=%s">Delete</a> / <a href="ringPatterns.py?editRingPatternId=%s">Edit</a></th>' % (ringPatternId, ringPatternId)
+                + '<td><a class="delete" href="ringPatterns.py?deleteRingPatternId=%s">Delete</a>' % ringPatternId
+                + '<a class="edit" href="ringPatterns.py?editRingPatternId=%s">Edit</a></td>' % ringPatternId
                 + "</tr>")
 
         print ("</table")

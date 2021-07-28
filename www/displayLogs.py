@@ -2,24 +2,15 @@
 # -*- coding: utf-8 -*-
 # Encoding: UTF-8
 
-from modules import logFile, webPageFooter
+from modules import logFile, webPageFooter, webPageHeader, pageNav
 import cgi
 import cgitb
 
 cgitb.enable()  # for troubleshooting
 
-
-print("Content-type: text/html")
-
-print("""
-<html>
-<head><title>School Bell - Log Files</title></head>
-<body> 
-<h3> School Bell - Log Files</h3>
-""")
-
 def pageLinks():
     print('\n<br><a href="index.py">Home</a>')
+
 
 def pageBody():
     print("\n<br>")
@@ -40,12 +31,9 @@ def pageBody():
         else:
             print("\n<br>------ No entries in %s -----" % fileName)
 
+
 if __name__ == "__main__":
-    pageLinks()
+    webPageHeader()
+    pageNav()
     pageBody()
     webPageFooter()
-
-print("""
-</body>
-</html>
-""")

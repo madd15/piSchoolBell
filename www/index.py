@@ -88,10 +88,7 @@ def pageBody():
     ) = nextRing(cursor, dateNow, timeNow, verbose)
     nextRingDate = datetime.strftime(nextRingDate, "%Y-%m-%d")
 
-    print("\n<br>Current Date:"
-        + '\n<br>&emsp;%s' % (dateNow)
-        + "\n<br>"
-        + "\nNext bell:"
+    print("\nNext bell:"
         + "\n<br>&emsp;%s, %s" % (nextRingDate, nextRingDay)
         + "\n<br>&emsp;&emsp;%s, %s" % (nextRingTime, ringTimeName)
         + "\n<br>")

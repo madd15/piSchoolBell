@@ -262,9 +262,9 @@ def pageBody():
     result, rowCount = db_query(cursor, query, verbose)  # run query
     if rowCount:  # display breaks in a table
         print ("\n<br>\n<br>"
-            + '<a href="schoolBreaks.py?addSchoolBreak=1">Add New Break</a>'
+            + '<a class="addNew" href="schoolBreaks.py?addSchoolBreak=1">Add New Break</a>'
             + "\n<br>\n<br>"
-            + '<table style="width:400px">'
+            + '<table>'
             + "<tr>"
             + "<th>Break name</th>"
             + "<th>Start date</th>"
@@ -289,7 +289,8 @@ def pageBody():
                 + "<td>%s</td>" % schoolBreakName
                 + "<td>%s</td>" % startDate
                 + "<td>%s</th>" % endDate
-                + '<td><a href="schoolBreaks.py?deleteSchoolBreakId=%s">Delete</a> / <a href="schoolBreaks.py?editSchoolBreakId=%s">Edit</a></td>' % (schoolBreakId, schoolBreakId)
+                + '<td><a class="delete" href="schoolBreaks.py?deleteSchoolBreakId=%s">Delete</a>' % schoolBreakId
+                + '<a class="edit" href="schoolBreaks.py?editSchoolBreakId=%s">Edit</a></td>' % schoolBreakId
                 + "</tr>")
 
         print ("</table")

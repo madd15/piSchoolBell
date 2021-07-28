@@ -85,11 +85,6 @@ def countRingTimes(iMax):
 
     return ringCount, schoolDayCount
 
-
-def pageLinks():
-
-    print ('\n<br><a href="displayLogs.py">Log files</a>')
-
 def pageBody():
 
     print ("\n<br>")
@@ -168,7 +163,6 @@ def pageBody():
 if __name__ == "__main__":
     webPageHeader()
     pageNav()
-    pageLinks()
     pageBody()
     webPageFooter()
 
